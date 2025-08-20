@@ -1,0 +1,73 @@
+#include <Arduino.h>
+
+int relePins[4] = { 2, 3, 4, 5 }; 
+int pwmPins[2] = { 9, 10 }; 
+
+int temperatureSensorPin = A0; 
+int rawTemperature = 0;
+
+unsigned long previousMillis = 0; // Store the last time the temperature was read
+unsigned long interval = 1000; // Interval at which to read the temperature (1 second)
+
+void setup() {
+  Serial.begin(9600); // Start serial communication at 9600 baud rate
+
+  for (int i = 0; i < 4; i++) {
+    pinMode(relePins[i], OUTPUT); // Set rele pins as output
+    digitalWrite(relePins[i], LOW); // Initialize rele pins to LOW
+  }
+  for (int i = 0; i < 2; i++) {
+    pinMode(pwmPins[i], OUTPUT); // Set PWM pins as output
+    analogWrite(pwmPins[i], 0); // Initialize PWM pins to 0
+  }
+
+}
+
+// the loop function runs over and over again forever
+void loop() {
+
+  currentMillis = millis(); // Get the current time
+
+  for (int i = 0; i < 4; i++) {
+    digitalWrite(relePins[i], HIGH); // Turn on each rele
+    delay(1000); // Wait for 100 milliseconds
+    digitalWrite(relePins[i], LOW); // Turn off each rele
+    delay(1000); // Wait for 100 milliseconds
+  }
+
+  for (int i = 0; i < 255; i++) {
+    analogWrite(pwmPins[0], i); // Gradually increase brightness on the first PWM pin
+    delay(10); // Wait for 10 milliseconds
+    analogWrite(pwmPins[1], 255 - i); // Gradually decrease brightness on the second PWM pin
+    delay(10); // Wait for 10 milliseconds
+
+  }
+
+  for (int i = 255; i >= 0; i--) {
+    analogWrite(pwmPins[0], i); // Gradually decrease brightness on the first PWM pin
+    delay(10); // Wait for 10 milliseconds
+    analogWrite(pwmPins[1], 255 - i); // Gradually increase brightness on the second PWM pin
+    delay(10); // Wait for 10 milliseconds
+  }
+
+  tReading(); // Call the temperature reading function
+
+  delay(1000); // Wait for 1 second before the next reading
+}
+
+void tReading(){
+  
+
+  if (currentMillis - previousMillis >= interval) {
+
+    rawTemperature = analogRead(temperatureSensorPin); // Read the temperature sensor value
+  int Temperature = map(rawTemperature, 1023, 0, -40, 125); // Map the raw value to a temperature range
+  
+  Serial.print("Raw Temperature: ");
+  Serial.println(rawTemperature);
+  Serial.print("Mapped Temperature: ");
+  Serial.println(Temperature);
+
+    previousMillis = currentMillis;
+  }
+}
