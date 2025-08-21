@@ -4,6 +4,8 @@ Antes conectarse con ssh y vnc. Hay que iniciar la grabación desde VNC para que
 
 Este script crea los videos en la carpeta /home/pi/videos
 
+Ajustando la resolución se cambia también el tamaño de la imagen (y del archivo)
+
 ```bash
 #!/bin/bash
 
@@ -16,7 +18,7 @@ mkdir -p "$VIDEO_DIR"
 if [ "$1" == "start" ]; then
     FILE_H264="$VIDEO_DIR/captura_$(date +%Y%m%d_%H%M%S).h264"
     
-    libcamera-vid --fullscreen -t 0 -o "$FILE_H264" &
+    libcamera-vid --fullscreen --width 1920 --height 1080 -t 0 -o "$FILE_H264" &
     
     echo $! > "$PID_FILE"
     echo "$FILE_H264" > "$NAME_FILE"   # guardamos el nombre
