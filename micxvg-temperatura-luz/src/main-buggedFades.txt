@@ -14,8 +14,6 @@ LEDFader leds[] = { LEDFader(9), LEDFader(10) };
 LEDFader &led1 = leds[0];
 LEDFader &led2 = leds[1];
 
-// Estados: true = subiendo, false = bajando
-bool subiendo[] = { true, true };
 
 // Variables para almacenar la temperatura
 int rawTemperature = 0;
@@ -41,9 +39,9 @@ void setup()
     {
         pinMode(relePins[i], OUTPUT);
     }
-    // // Primer fade para arrancar el ciclo
-    // led1.fade(255, 2000); // subir en 2s
-    // led2.fade(255, 1000); // subir en 1s
+    // Primer fade para arrancar el ciclo
+    led1.fade(255, 2000); // subir en 2s
+    led2.fade(255, 1000); // subir en 1s
 }
 
 // funcion para animar los leds: siempre usa 0 como mínimo y 255 como máximo
