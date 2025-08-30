@@ -1,24 +1,29 @@
 #include <Arduino.h>
-#include <LEDFader.h> // Include the LEDFader library for PWM control
 
-// Pines de los LEDs
+// Pines de los Reles
 int relePins[] = {2, 3, 4, 5};
+
+// Pines de los LEDS
+int ledPin1 = 9;
+int ledPin2 = 10;
+
+// inicializamos tiempos de subida y bajada leds
+int tiempoSubida1 = 1;
+int tiempoBajada1 = 10;
+int tiempoSubida2 = 15;
+int tiempoBajada2 = 5;
 
 // para mapear comportamiento medido por sensor de temperatura
 int comportamiento = 0;
+int prevComportamiento = -1;
 int temperatureSensorPin = A1; // Pin analógico para el sensor de temperatura
 int Temperature = 0;
-
-// Definir los objetos LEDFader para los LEDs
-LEDFader leds[] = { LEDFader(9), LEDFader(10) };
-LEDFader &led1 = leds[0];
-LEDFader &led2 = leds[1];
-
-// Estados: true = subiendo, false = bajando
-bool subiendo[] = { true, true };
+bool change = false; // para detectar si hubo un cambio para resetear reles y fades
 
 // Variables para almacenar la temperatura
 int rawTemperature = 0;
+
+// variables ligadas al tiempo
 unsigned long previousMillis = 0; // Store the last time the temperature was read
 unsigned long currentMillis = 0;  // Store the current time
 unsigned long interval = 1000;    // Interval at which to read the temperature
@@ -41,32 +46,21 @@ void setup()
     {
         pinMode(relePins[i], OUTPUT);
     }
-    // // Primer fade para arrancar el ciclo
-    // led1.fade(255, 2000); // subir en 2s
-    // led2.fade(255, 1000); // subir en 1s
+
+    pinMode(ledPin1, OUTPUT);
+    pinMode(ledPin2, OUTPUT);
 }
 
-// funcion para animar los leds: siempre usa 0 como mínimo y 255 como máximo
-void animarLed(LEDFader &led, int tSubida, int tBajada)
-{
-    // Si el LED no está haciendo fade, decide el próximo destino según su valor actual
-    if (!led.is_fading())
-    {
-        if (led.get_value() == 0)
-        {
-            led.fade(255, tSubida); // subir de 0 a 255
-        }
-        else if (led.get_value() == 255)
-        {
-            led.fade(0, tBajada); // bajar de 255 a 0
-        }
-        // Si está en un valor intermedio, no hacer nada hasta que termine el fade
-    }
-}
 // Función genérica para controlar un RELE usando arrays
 void controlarRele(int pin, unsigned long onT, unsigned long offT,
-                  int releIndex)
+                   int releIndex)
 {
+    if (change == true)
+    {
+        releStates[releIndex] = LOW;
+        prevMillis[releIndex] = currentMillis;
+        digitalWrite(pin, releStates[releIndex]);
+    }
 
     if (releStates[releIndex] == HIGH && (currentMillis - prevMillis[releIndex] >= onT))
     {
@@ -79,6 +73,47 @@ void controlarRele(int pin, unsigned long onT, unsigned long offT,
         releStates[releIndex] = HIGH;
         prevMillis[releIndex] = currentMillis;
         digitalWrite(pin, releStates[releIndex]);
+    }
+}
+
+// ---------- FUNCIÓN DE FADE ----------
+void fadeLed(int pin, int tiempoSubida, int tiempoBajada)
+{
+    static int brillo[20];             // soporta hasta 20 pines distintos
+    static int paso[20];               // dirección del fade
+    static unsigned long anterior[20]; // tiempo anterior
+
+    // unsigned long ahora = millis();
+
+    // Inicialización solo la primera vez
+    if (paso[pin] == 0 || change == true)
+    {
+        brillo[pin] = 0;
+        paso[pin] = 1;
+        anterior[pin] = currentMillis;
+    }
+
+    // Escoger intervalo según dirección
+    int intervalo = (paso[pin] > 0) ? tiempoSubida : tiempoBajada;
+
+    if (currentMillis - anterior[pin] >= intervalo)
+    {
+        anterior[pin] = currentMillis;
+
+        brillo[pin] += paso[pin];
+
+        if (brillo[pin] <= 0)
+        {
+            brillo[pin] = 0;
+            paso[pin] = 1; // subir
+        }
+        else if (brillo[pin] >= 255)
+        {
+            brillo[pin] = 255;
+            paso[pin] = -1; // bajar
+        }
+
+        analogWrite(pin, brillo[pin]);
     }
 }
 
@@ -95,6 +130,8 @@ void controlarComportamiento()
 {
     if (currentMillis - previousMillis >= interval)
     {
+        
+
         // comportamiento = (rawTemperature / 4) % 2;
         if (rawTemperature < 512)
         {
@@ -109,7 +146,17 @@ void controlarComportamiento()
         Serial.print(" | Comportamiento: ");
         Serial.print(comportamiento);
         Serial.println();
+
+        change = false;
         previousMillis = currentMillis; // Update previousMillis here
+    }
+       
+    if (comportamiento != prevComportamiento)
+    {
+        change = true;
+        prevComportamiento = comportamiento;
+    } else {
+        change = false;
     }
 }
 
@@ -118,9 +165,6 @@ void loop()
     currentMillis = millis();
     tReading();
     controlarComportamiento();
-
-    led1.update();
-    led2.update();
 
     // funcion para controlar encendidos y apagados de LEDS
     //  controlarRele(relePins[0], onTime1, offTime1, 0);
@@ -132,23 +176,28 @@ void loop()
     {
     case 0:
         // Acción para comportamiento 0
-        controlarRele(relePins[0], onTime1, offTime1, 0);
-        controlarRele(relePins[1], onTime2, offTime2, 1);
-        controlarRele(relePins[2], onTime3, offTime3, 2);
-        controlarRele(relePins[3], onTime4, offTime4, 3);
+        onTime1 = 510, offTime1 = 520;
+        onTime2 = 530, offTime2 = 540;
+        onTime3 = 550, offTime3 = 560;
+        onTime4 = 570, offTime4 = 580;
 
-        animarLed(led1, 2000, 2000);  
-        animarLed(led2, 1000, 3000); 
+        tiempoSubida1 = 0;
+        tiempoBajada1 = 4;
+        tiempoSubida2 = 4;
+        tiempoBajada2 = 0;
+
         break;
     case 1:
         // Acción para comportamiento 1
-        controlarRele(relePins[0], onTime1 * 2, offTime1 * 2, 0);
-        controlarRele(relePins[1], onTime2 * 2, offTime2 * 2, 1);
-        controlarRele(relePins[2], onTime3 * 2, offTime3 * 2, 2);
-        controlarRele(relePins[3], onTime4 * 2, offTime4 * 2, 3);
+        onTime1 = 200, offTime1 = 200;
+        onTime2 = 200, offTime2 = 200;
+        onTime3 = 200, offTime3 = 200;
+        onTime4 = 200, offTime4 = 200;
 
-        animarLed(led1, 400, 400);  
-        animarLed(led2, 200, 600); 
+        tiempoSubida1 = 10;
+        tiempoBajada1 = 10;
+        tiempoSubida2 = 11;
+        tiempoBajada2 = 11;
 
         break;
     default:
@@ -156,6 +205,15 @@ void loop()
         Serial.println("Comportamiento desconocido.");
         break;
     }
+
+    // Actualizar RELES y LEDS
+    controlarRele(relePins[0], onTime1, offTime1, 0);
+    controlarRele(relePins[1], onTime2, offTime2, 1);
+    controlarRele(relePins[2], onTime3, offTime3, 2);
+    controlarRele(relePins[3], onTime4, offTime4, 3);
+
+    fadeLed(ledPin1, tiempoSubida1, tiempoBajada1);
+    fadeLed(ledPin2, tiempoSubida2, tiempoBajada2);
 
     // Serial.print("Comportamiento: ");
     // Serial.print(comportamiento);

@@ -1,0 +1,84 @@
+#include <Arduino.h>
+
+// ---------- FUNCIÓN DE FADE ----------
+void fadeLed(int pin, int tiempoSubida, int tiempoBajada) {
+  static int brillo[20];                // soporta hasta 20 pines distintos
+  static int paso[20];                  // dirección del fade
+  static unsigned long anterior[20];    // tiempo anterior
+
+  unsigned long ahora = millis();
+
+  // Inicialización solo la primera vez
+  if (paso[pin] == 0) {
+    brillo[pin] = 0;
+    paso[pin] = 1;
+    anterior[pin] = ahora;
+  }
+
+  // Escoger intervalo según dirección
+  int intervalo = (paso[pin] > 0) ? tiempoSubida : tiempoBajada;
+
+  if (ahora - anterior[pin] >= intervalo) {
+    anterior[pin] = ahora;
+
+    brillo[pin] += paso[pin];
+
+    if (brillo[pin] <= 0) {
+      brillo[pin] = 0;
+      paso[pin] = 1;   // subir
+    } else if (brillo[pin] >= 255) {
+      brillo[pin] = 255;
+      paso[pin] = -1;  // bajar
+    }
+
+    analogWrite(pin, brillo[pin]);
+  }
+}
+
+// ---------- VARIABLES GLOBALES ----------
+int ledPin1 = 9;
+int ledPin2 = 10;
+
+int tiempoSubida1 = 5;
+int tiempoBajada1 = 20;
+int tiempoSubida2 = 15;
+int tiempoBajada2 = 5;
+
+unsigned long anteriorCambio = 0;
+unsigned long intervaloCambio = 10000; // 10 segundos
+
+
+void setup() {
+  pinMode(ledPin1, OUTPUT);
+  pinMode(ledPin2, OUTPUT);
+  randomSeed(analogRead(A0));  // semilla para random
+  Serial.begin(9600);
+}
+
+void loop() {
+  unsigned long ahora = millis();
+
+  // Cada 10 segundos generamos un número random
+  if (ahora - anteriorCambio >= intervaloCambio) {
+    anteriorCambio = ahora;
+    int numero = analogRead(A1); //random(100);   // número aleatorio entre 0 y 99
+
+    switch (numero % 2) {
+      case 0: // PAR
+        tiempoSubida1 = 1;   tiempoBajada1 = 5;
+        tiempoSubida2 = 5;  tiempoBajada2 = 1;
+        break;
+
+      case 1: // IMPAR
+        tiempoSubida1 = 30;  tiempoBajada1 = 5;
+        tiempoSubida2 = 50;  tiempoBajada2 = 15;
+        break;
+
+    }
+    Serial.println(numero);
+  }
+
+  // Ejecutamos los fades según los tiempos actuales
+  fadeLed(ledPin1, tiempoSubida1, tiempoBajada1);
+  fadeLed(ledPin2, tiempoSubida2, tiempoBajada2);
+}
