@@ -38,27 +38,27 @@ void pausa(int duracion)
 void playIntro()
 {
     // Introducción: secuencia de tonos al iniciar
-    sonido(0, 500, 500, 50);  // Pin 2
-    sonido(1, 600, 500, 50);  // Pin 3
-    sonido(2, 700, 500, 50);  // Pin 4
-    sonido(3, 800, 500, 50);  // Pin 5
-    sonido(4, 900, 500, 50);  // Pin 6
-    sonido(5, 1000, 500, 50); // Pin 7
-    sonido(6, 1100, 500, 50); // Pin 8
-    sonido(7, 1200, 500, 50); // Pin 10
-    sonido(8, 1300, 500, 50); // Pin 11
-    sonido(9, 1400, 500, 50); // Pin 12
+    // sonido(0, 500, 500, 50);  // Pin 2
+    // sonido(1, 600, 500, 50);  // Pin 3
+    // sonido(2, 700, 500, 50);  // Pin 4
+    // sonido(3, 800, 500, 50);  // Pin 5
+    // sonido(4, 900, 500, 50);  // Pin 6
+    // sonido(5, 1000, 500, 50); // Pin 7
+    // sonido(6, 1100, 500, 50); // Pin 8
+    // sonido(7, 1200, 500, 50); // Pin 10
+    // sonido(8, 1300, 500, 50); // Pin 11
+    // sonido(9, 1400, 500, 50); // Pin 12
 
-    sonido(0, 500, 500, 50);  // Pin 2
-    sonido(1, 600, 500, 50);  // Pin 3
-    sonido(2, 700, 500, 50);  // Pin 4
-    sonido(3, 800, 500, 50);  // Pin 5
-    sonido(4, 900, 500, 50);  // Pin 6
-    sonido(5, 1000, 500, 50); // Pin 7
-    sonido(6, 1100, 500, 50); // Pin 8
-    sonido(7, 1200, 500, 50); // Pin 10
-    sonido(8, 1300, 500, 50); // Pin 11
-    sonido(9, 1400, 500, 50); // Pin 12
+    // sonido(0, 500, 500, 50);  // Pin 2
+    // sonido(1, 600, 500, 50);  // Pin 3
+    // sonido(2, 700, 500, 50);  // Pin 4
+    // sonido(3, 800, 500, 50);  // Pin 5
+    // sonido(4, 900, 500, 50);  // Pin 6
+    // sonido(5, 1000, 500, 50); // Pin 7
+    // sonido(6, 1100, 500, 50); // Pin 8
+    // sonido(7, 1200, 500, 50); // Pin 10
+    // sonido(8, 1300, 500, 50); // Pin 11
+    // sonido(9, 1400, 500, 50); // Pin 12
 
     pausa(500); // Pausa de medio segundo
 }
@@ -76,12 +76,12 @@ void setup()
 
 void seleccionarComportamiento()
 {
-
-    if (tiempoActual - tiempoAnterior >= intervaloComportamiento)
-    {
-        comportamiento = intensidadLuz % cantidadComportamientos; // Cambia el comportamiento basado en la intensidad de luz
-        tiempoAnterior = tiempoActual;
-    }
+    comportamiento = 0;
+    // if (tiempoActual - tiempoAnterior >= intervaloComportamiento)
+    // {
+    //     comportamiento = intensidadLuz % cantidadComportamientos; // Cambia el comportamiento basado en la intensidad de luz
+    //     tiempoAnterior = tiempoActual;
+    // }
 }
 
 void loop()
@@ -98,19 +98,21 @@ void loop()
     {
     case 0:
         // Comportamiento 0: Tonos bajos y largos
-        sonido(0, 1000, 100, 50); // Pin 2
-        pausa(100);
+        sonido(0, random(8000, 15000), random(30, 400), 50); // Pin 2
+        pausa(random(500, 1000));
         sonido(1, 3000, 100, 50); // Pin 3
-        pausa(100);
-        sonido(7, 2000, 100, 50); // Pin 10
-        pausa(100);
+        pausa(random(500, 1000));
+        sonido(7, random (32, 100), 100, 50); // Pin 10
+        pausa(random(500, 1000));
         break;
     case 1:
         // Comportamiento 1: Tonos medios y rápidos
         sonido(0, 400, 50, 20); // Pin 6
-        pausa(150);
+        pausa(350);
         sonido(1, 450, 50, 20); // Pin 7
         pausa(150);
+        sonido(7, 2000, 100, 50); // Pin 10
+        pausa(400);
         break;
     case 2:
         // Comportamiento 2: Tonos altos y cortos

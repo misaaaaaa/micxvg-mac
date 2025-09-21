@@ -176,10 +176,10 @@ void loop()
     {
     case 0:
         // Acción para comportamiento 0
-        onTime1 = 510, offTime1 = 520;
-        onTime2 = 530, offTime2 = 540;
-        onTime3 = 550, offTime3 = 560;
-        onTime4 = 570, offTime4 = 580;
+        onTime1 = 500, offTime1 = 500;
+        onTime2 = 501, offTime2 = 501;
+        onTime3 = 502, offTime3 = 502;
+        onTime4 = 503, offTime4 = 503;
 
         tiempoSubida1 = 0;
         tiempoBajada1 = 4;
@@ -189,15 +189,15 @@ void loop()
         break;
     case 1:
         // Acción para comportamiento 1
-        onTime1 = 200, offTime1 = 200;
-        onTime2 = 200, offTime2 = 200;
-        onTime3 = 200, offTime3 = 200;
-        onTime4 = 200, offTime4 = 200;
+        onTime1 = 1000, offTime1 = 50;
+        onTime2 = 1000, offTime2 = 750;
+        onTime3 = 1000, offTime3 = 700;
+        onTime4 = 1000, offTime4 = 100;
 
-        tiempoSubida1 = 10;
-        tiempoBajada1 = 10;
-        tiempoSubida2 = 11;
-        tiempoBajada2 = 11;
+        tiempoSubida1 = 20;
+        tiempoBajada1 = 20;
+        tiempoSubida2 = 10;
+        tiempoBajada2 = 10;
 
         break;
     default:
