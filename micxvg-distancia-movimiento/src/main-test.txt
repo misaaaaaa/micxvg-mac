@@ -1,0 +1,64 @@
+#include <Arduino.h>
+
+#include <Servo.h>
+#include <movingAvg.h>
+
+
+
+const int trigPin = 2;
+const int echoPin = 3;
+const int servoPin = 9;
+
+Servo miServo;
+movingAvg filtro(20);  // filtro con 20 muestras
+
+long duracion;
+int distancia;
+
+void setup() {
+  pinMode(trigPin, OUTPUT);
+  pinMode(echoPin, INPUT);
+  miServo.attach(servoPin);
+  miServo.write(0); // posición inicial mínima
+  Serial.begin(9600);
+
+  filtro.begin(); // inicializar filtro
+}
+
+void loop() {
+  // Generar pulso para medir distancia
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(2);
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+
+  // Calcular duración del eco
+  duracion = pulseIn(echoPin, HIGH);
+
+  // Convertir a distancia en cm
+  distancia = duracion * 0.034 / 2;
+
+  // Filtrar la distancia
+  int distanciaFiltrada = filtro.reading(distancia);
+
+  // Mapear distancia filtrada al rango de 0° a 270°
+  // ajusta 5–80 cm según tu entorno de medición
+  int angulo = map(distanciaFiltrada, 5, 80, 0, 270);
+
+  // Limitar valores al rango válido
+  angulo = constrain(angulo, 10, 260);
+
+  // Mover servo
+  miServo.write(angulo);
+
+  // Mostrar en Serial
+  Serial.print("Distancia cruda: ");
+  Serial.print(distancia);
+  Serial.print(" cm | Filtrada: ");
+  Serial.print(distanciaFiltrada);
+  Serial.print(" cm -> Servo: ");
+  Serial.println(angulo);
+
+  delay(50);
+}
