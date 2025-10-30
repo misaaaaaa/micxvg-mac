@@ -6,6 +6,10 @@
 		{
 			"name": "micxvg-distancia-movimiento",
 			"path": "."
+		},
+		{
+			"name": "mixcvg-luz-sonido",
+			"path": "../mixcvg-luz-sonido"
 		}
 	],
 	"settings": {}

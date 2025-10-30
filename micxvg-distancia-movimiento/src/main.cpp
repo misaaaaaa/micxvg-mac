@@ -22,10 +22,10 @@ int tiempoBajada = 10;
 
 // para mapear comportamiento medido por sensor de temperatura
 int comportamiento = 0;
-int cantidadComportamientos = 3;
+int cantidadComportamientos = 10;
 int prevComportamiento = -1;
-int temperatureSensorPin = A1; // Pin analógico para el sensor de temperatura
-int Temperature = 0;
+//int temperatureSensorPin = A1; // Pin analógico para el sensor de temperatura
+//int Temperature = 0;
 bool change = false; // para detectar si hubo un cambio para resetear reles y fades
 
 // Variables para almacenar la temperatura
@@ -34,7 +34,7 @@ int rawTemperature = 0;
 // variables ligadas al tiempo
 unsigned long previousMillis = 0; // Store the last time the temperature was read
 unsigned long currentMillis = 0;  // Store the current time
-unsigned long interval = 1000;    // Interval at which to read the temperature
+unsigned long interval = 30000;    // Interval at which to read the temperature
 
 unsigned long prevMillis[4] = {0, 0, 0, 0};
 
@@ -223,31 +223,37 @@ void setupUltrasonic()
 
 void leerSensorUltrasonico()
 {
-    if (!triggerSent)
+    // Solo ejecutar si ha pasado el intervalo requerido
+    if (currentMillis - previousMillis >= interval)
     {
-        triggerUltrasonic();
+        if (!triggerSent)
+        {
+            triggerUltrasonic();
+        }
+        if (echoReceived)
+        {
+            // El cálculo con unsigned long maneja correctamente el rollover de micros()
+            unsigned long duracion = echoEnd - echoStart;
+            // Convertir tiempo de ida y vuelta (µs) a distancia en cm: distancia_cm = duracion / 58
+            unsigned long distancia_cm = duracion / 58UL;
+
+            comportamiento = duracion % cantidadComportamientos; // Mapear duración a comportamiento (0, 1, ... cantidadComportamientos-1)
+
+            Serial.print("Tiempo de pulso (us): ");
+            Serial.print(duracion);
+            Serial.print(" | Comportamiento (cm): ");
+            Serial.println(comportamiento);
+
+            // Actualizar el tiempo de la última lectura
+            previousMillis = currentMillis;
+        }
     }
-    if (echoReceived)
-    {
-        // El cálculo con unsigned long maneja correctamente el rollover de micros()
-        unsigned long duracion = echoEnd - echoStart;
-        // Convertir tiempo de ida y vuelta (µs) a distancia en cm: distancia_cm = duracion / 58
-        unsigned long distancia_cm = duracion / 58UL;
-
-        comportamiento = duracion % cantidadComportamientos; // Mapear duración a comportamiento (0, 1, ... cantidadComportamientos-1)
-
-        Serial.print("Tiempo de pulso (us): ");
-        Serial.print(duracion);
-        Serial.print(" | Comportamiento (cm): ");
-        Serial.println(comportamiento);
-
-        
 
         // Reset flags para permitir nueva medición
         triggerSent = false;
         echoReceived = false;
     }
-}
+
 
 void setup()
 {
@@ -269,39 +275,102 @@ void loop()
     {
     case 0:
         // Acción para comportamiento 0
-
         tiempoSubida = 40;
         tiempoBajada = 20;
         pausa = 500;
         anguloMinimo = 10;
         anguloMaximo = 80;
-        repeticionesAntesLectura = 4; // Leer distancia cada 4 idas y vueltas completas
-
- 
+        repeticionesAntesLectura = 4;
         break;
+
     case 1:
         // Acción para comportamiento 1
-
-        tiempoSubida = 20;
-        tiempoBajada = 40;
+        tiempoSubida = 30;
+        tiempoBajada = 60;
         pausa = 500;
         anguloMinimo = 10;
         anguloMaximo = 80;
-        repeticionesAntesLectura = 4; // Leer distancia cada 4 idas y vueltas completas
-
- 
+        repeticionesAntesLectura = 4;
         break;
+
     case 2:
         // Acción para comportamiento 2
-
-        tiempoSubida = 20;
-        tiempoBajada = 40;
+        tiempoSubida = 40;
+        tiempoBajada = 60;
         pausa = 1000;
         anguloMinimo = 10;
         anguloMaximo = 170;
-        repeticionesAntesLectura = 2; // Leer distancia cada 4 idas y vueltas completas
+        repeticionesAntesLectura = 2;
+        break;
 
- 
+    case 3:
+        // Movimiento más lento y amplio
+        tiempoSubida = 80;
+        tiempoBajada = 80;
+        pausa = 800;
+        anguloMinimo = 20;
+        anguloMaximo = 160;
+        repeticionesAntesLectura = 3;
+        break;
+
+    case 4:
+        // Subida lenta, bajada rápida
+        tiempoSubida = 90;
+        tiempoBajada = 40;
+        pausa = 600;
+        anguloMinimo = 30;
+        anguloMaximo = 120;
+        repeticionesAntesLectura = 5;
+        break;
+
+    case 5:
+        // Oscilación pequeña pero rítmica
+        tiempoSubida = 50;
+        tiempoBajada = 50;
+        pausa = 300;
+        anguloMinimo = 40;
+        anguloMaximo = 100;
+        repeticionesAntesLectura = 6;
+        break;
+
+    case 6:
+        // Movimiento amplio y pausado
+        tiempoSubida = 100;
+        tiempoBajada = 100;
+        pausa = 1200;
+        anguloMinimo = 15;
+        anguloMaximo = 180;
+        repeticionesAntesLectura = 1;
+        break;
+
+    case 7:
+        // Subida más rápida, bajada más lenta
+        tiempoSubida = 40;
+        tiempoBajada = 90;
+        pausa = 700;
+        anguloMinimo = 20;
+        anguloMaximo = 150;
+        repeticionesAntesLectura = 3;
+        break;
+
+    case 8:
+        // Movimiento irregular con pausa larga
+        tiempoSubida = 60;
+        tiempoBajada = 30;
+        pausa = 1500;
+        anguloMinimo = 50;
+        anguloMaximo = 130;
+        repeticionesAntesLectura = 2;
+        break;
+
+    case 9:
+        // Movimiento corto y rítmico
+        tiempoSubida = 30;
+        tiempoBajada = 30;
+        pausa = 200;
+        anguloMinimo = 70;
+        anguloMaximo = 110;
+        repeticionesAntesLectura = 8;
         break;
     default:
         // Acción para otros valores (por si acaso)
