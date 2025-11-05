@@ -1,8 +1,5 @@
 #include <Arduino.h>
 
-//version random
-//version random
-
 // Pines de los Reles
 int relePins[] = {2, 3, 4, 5};
 
@@ -140,7 +137,7 @@ void controlarComportamiento()
     {
         
 
-        //comportamiento = rawTemperature  % cantidadComportamientos;
+        comportamiento = rawTemperature  % cantidadComportamientos;
         
         Serial.print("Raw Temperature: ");
         Serial.print(rawTemperature);
